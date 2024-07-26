@@ -38,6 +38,9 @@ void Engine::load()
   entity_manager->new_entity();
   entity_manager->add_components<P_GRAPHICS>(0);
 
+  entity_manager->new_entity();
+  entity_manager->add_components<P_GRAPHICS>(1);
+
   P_GRAPHICS graphics = std::make_shared<Graphics>(
     Graphics::Builder()
       .vertices({
@@ -49,6 +52,18 @@ void Engine::load()
       .material(material)
   );
 
+  P_GRAPHICS graphics2 = std::make_shared<Graphics>(
+    Graphics::Builder()
+      .vertices({
+        {{ 0.5, 0.5, -0.5 }},
+        {{ 0.5, -0.5, -0.5 }},
+        {{-0.5, 0.5, -0.5 }},
+        {{-0.5, -0.5, -0.5 }}
+      })
+      .indices({ 0, 1, 2, 2, 3, 1 })
+      .material(material)
+  );
+
   vk::PhysicalDeviceDynamicRenderingFeatures dynamicRendering{
     .dynamicRendering = vk::True
   };
@@ -57,6 +72,9 @@ void Engine::load()
 
   graphics->initialize(*vecs_device);
   component_manager->update_data<P_GRAPHICS>(0, graphics);
+
+  graphics2->initialize(*vecs_device);
+  component_manager->update_data<P_GRAPHICS>(1, graphics2);
   
   renderer->link(vecs_device, vecs_gui);
   renderer->initialize();
@@ -83,7 +101,7 @@ void Engine::run()
       cos(da * time + da),
       cos(da * time + 2 * da)
     };
-    component_manager->retrieve<P_GRAPHICS>(0).value()->material()->updateUniforms<Color>(color);
+    material->updateUniforms<Color>(color);
 
     auto end_frame = std::chrono::high_resolution_clock::now();
 
