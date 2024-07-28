@@ -5,34 +5,29 @@
 
 #include <vecs/vecs.hpp>
 
-#include <chrono>
-
 namespace str
 {
-
-struct Color
-{
-  la::vec<3> value;
-};
 
 class Engine : public vecs::Engine
 {
   public:
     ~Engine();
-    
+
     void load() override;
     void run() override;
 
   private:
-    bool close_condition() override;
-  
-  private:
-    std::shared_ptr<Material> material;
-    std::shared_ptr<Renderer> renderer;
-    Color color{{0.0, 1.0, 0.0}};
-    float time = 0.0;
+    void loadMaterials();
+    void setupECS();
+    void loadComponents();
 
-    unsigned int loopCounter = 0;
+  private:
+    std::shared_ptr<Renderer> renderer;
+    std::array<std::shared_ptr<Material>, 2> materials;
+
+    float time = 0.0f;
+    float prevTime = 0.0f;
+    float delta_time = 0.0f;
 };
 
 } // namespace str

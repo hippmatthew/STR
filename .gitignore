@@ -1,2 +1,7 @@
 # Directories
 .vscode
+.cache
+
+# Files
+compile_commands.json
+Makefile

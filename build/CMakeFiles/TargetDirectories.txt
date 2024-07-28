@@ -1,0 +1,3 @@
+/Users/groot/Documents/GitHub/STR/build/CMakeFiles/STR.dir
+/Users/groot/Documents/GitHub/STR/build/CMakeFiles/edit_cache.dir
+/Users/groot/Documents/GitHub/STR/build/CMakeFiles/rebuild_cache.dir

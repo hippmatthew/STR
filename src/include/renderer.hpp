@@ -15,6 +15,11 @@
 namespace str
 {
 
+struct Color
+{
+  la::vec<3> value;
+};
+
 class Renderer : public vecs::System
 {
   public:

@@ -1,9 +1,5 @@
 #include "src/include/renderer.hpp"
-
-#include <iostream>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
+#include "src/include/transform.hpp"
 
 namespace str
 {
@@ -17,9 +13,9 @@ void Renderer::update(
   checkResult(result.first, "retrieve");
 
   vecs_device->logical().resetFences(*flightFences[frame]);
-  
+
   begin(result.second);
-  
+
   for (const auto& e_id : e_ids)
     render(component_manager, e_id, result.second);
 
@@ -45,7 +41,7 @@ void Renderer::update(
     .pSwapchains        = &*vecs_gui->swapchain(),
     .pImageIndices      = &result.second
   };
-  
+
   auto presentResult = vecs_device->queue(vecs::FamilyType::All).presentKHR(presentInfo);
   checkResult(presentResult, "present");
 
@@ -82,7 +78,7 @@ void Renderer::initialize()
   {
     vk::FenceCreateInfo ci_fence{
       .flags  = vk::FenceCreateFlagBits::eSignaled
-    };  
+    };
     vk::SemaphoreCreateInfo ci_semaphore{};
 
     flightFences.emplace_back(vecs_device->logical().createFence(ci_fence));
@@ -151,7 +147,7 @@ void Renderer::begin(unsigned int imageIndex)
     .width = static_cast<float>(VECS_SETTINGS.extent().width),
     .height = static_cast<float>(VECS_SETTINGS.extent().height),
     .minDepth = 0.0f,
-    .maxDepth = 0.0f
+    .maxDepth = 1.0f
   };
   vk_commandBuffers[frame].setViewport(0, vk_viewport);
 
@@ -170,9 +166,13 @@ void Renderer::render(
   auto graphics_opt = component_manager->retrieve<P_GRAPHICS>(e_id);
   if (graphics_opt == std::nullopt) return;
   auto graphics = graphics_opt.value();
-  
-  auto mvpMatrix = la::mat<4>::view_matrix({0.0, 0.0, -2.0}, {0.0, 0.0, 0.0}, {0.0, -1.0, 0.0});
-    
+
+  auto transform_opt = component_manager->retrieve<Transform>(e_id);
+  if (transform_opt == std::nullopt) return;
+  auto transform = transform_opt.value();
+
+  auto mvpMatrix = camera.projection() * camera.view() * transform.model();
+
   vk_commandBuffers[frame].bindPipeline(
     vk::PipelineBindPoint::eGraphics,
     *graphics->material()->pipeline()
@@ -180,7 +180,7 @@ void Renderer::render(
 
   auto descriptorSets = graphics->material()->descriptorSets(frame);
   vk::ArrayProxy<vk::DescriptorSet> proxy(descriptorSets.size(), descriptorSets.data());
-  
+
   if (!descriptorSets.empty())
   {
     vk_commandBuffers[frame].bindDescriptorSets(
@@ -208,7 +208,7 @@ void Renderer::render(
 void Renderer::end(unsigned int imageIndex)
 {
   vk_commandBuffers[frame].endRendering();
-  
+
   vk::ImageMemoryBarrier memoryBarrier{
     .srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite,
     .oldLayout        = vk::ImageLayout::eColorAttachmentOptimal,
@@ -222,7 +222,7 @@ void Renderer::end(unsigned int imageIndex)
       .layerCount       = 1
     }
   };
-  
+
   vk_commandBuffers[frame].pipelineBarrier(
     vk::PipelineStageFlagBits::eColorAttachmentOutput,
     vk::PipelineStageFlagBits::eBottomOfPipe,

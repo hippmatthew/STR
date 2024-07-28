@@ -45,7 +45,7 @@ Graphics::Graphics(const GraphicsBuilder& builder)
 Graphics& Graphics::operator = (const Graphics& graphics)
 {
   if (this == &graphics) return *this;
-  
+
   vertices = graphics.vertices;
   indices = graphics.indices;
   p_material = graphics.p_material;
@@ -93,11 +93,6 @@ std::shared_ptr<Material> Graphics::material() const
   return p_material;
 }
 
-const la::mat<4>& Graphics::model() const
-{
-  return mat_model;
-}
-
 const unsigned long Graphics::indexCount() const
 {
   return indices.size();
@@ -125,11 +120,11 @@ void Graphics::initialize(const vecs::Device& vecs_device)
 
   auto vertexRequirements = vertexTransfer.getMemoryRequirements();
   auto indexRequirements = indexTransfer.getMemoryRequirements();
-  
+
   auto offset = vertexRequirements.size;
   while (offset % indexRequirements.alignment != 0)
     ++offset;
-  
+
   vk::MemoryAllocateInfo ai_memory{
     .allocationSize = offset + indexRequirements.size,
     .memoryTypeIndex = findIndex(
@@ -175,13 +170,13 @@ void Graphics::initialize(const vecs::Device& vecs_device)
   vk_memory = vecs_device.logical().allocateMemory(ai_memory);
   vk_vertexBuffer.bindMemory(*vk_memory, 0);
   vk_indexBuffer.bindMemory(*vk_memory, offset);
-  
+
   auto family = vecs::FamilyType::All;
   if (vecs_device.hasFamily(vecs::FamilyType::Transfer))
     family = vecs::FamilyType::Transfer;
   else if (vecs_device.hasFamily(vecs::FamilyType::Async))
     family = vecs::FamilyType::Async;
-    
+
   vk::CommandPoolCreateInfo ci_commandPool{
     .flags            = vk::CommandPoolCreateFlagBits::eTransient,
     .queueFamilyIndex = static_cast<unsigned int>(vecs_device.familyIndex(family))
@@ -241,7 +236,7 @@ unsigned int Graphics::findIndex(
 ) const
 {
   auto properties = vk_physicalDevice.getMemoryProperties();
-  
+
   for (unsigned long i = 0; i < properties.memoryTypeCount; ++i)
   {
     if ((filter & (1 << i)) &&
@@ -250,7 +245,7 @@ unsigned int Graphics::findIndex(
       return i;
     }
   }
-  
+
   throw std::runtime_error("error @ str::Graphics::findIndex() : could not find suitable memory index");
 }
 

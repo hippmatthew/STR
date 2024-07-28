@@ -15,7 +15,7 @@ class Graphics
     class GraphicsBuilder
     {
       friend class Graphics;
-      
+
       public:
         GraphicsBuilder() = default;
         GraphicsBuilder(const GraphicsBuilder&) = delete;
@@ -29,15 +29,15 @@ class Graphics
         GraphicsBuilder& vertices(const std::vector<Vertex>);
         GraphicsBuilder& indices(const std::vector<unsigned int>);
         GraphicsBuilder& material(std::shared_ptr<Material>);
-      
+
       private:
         std::vector<Vertex> verts;
         std::vector<unsigned int> inds;
         std::shared_ptr<Material> mat;
     };
-  
+
   friend class GraphicsBuilder;
-  
+
   public:
     Graphics() = default;
     Graphics(const Graphics&);
@@ -55,21 +55,18 @@ class Graphics
     const vk::raii::Buffer& vertexBuffer() const;
     const vk::raii::Buffer& indexBuffer() const;
     std::shared_ptr<Material> material() const;
-    const la::mat<4>& model() const;
     const unsigned long indexCount() const;
 
     void initialize(const vecs::Device&);
-  
+
   private:
     unsigned int findIndex(
       const vk::raii::PhysicalDevice&,
       unsigned int,
       vk::MemoryPropertyFlags
     ) const;
-  
-  private:
-    la::mat<4> mat_model = la::mat<4>::identity();
 
+  private:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::shared_ptr<Material> p_material;
