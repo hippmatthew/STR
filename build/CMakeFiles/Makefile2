@@ -64,6 +64,7 @@ CMAKE_BINARY_DIR = /Users/groot/Documents/GitHub/STR/build
 
 # The main recursive "all" target.
 all: CMakeFiles/STR.dir/all
+all: CMakeFiles/shaders.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -72,21 +73,22 @@ preinstall:
 
 # The main recursive "clean" target.
 clean: CMakeFiles/STR.dir/clean
+clean: CMakeFiles/shaders.dir/clean
 .PHONY : clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/STR.dir
 
 # All Build rule for target.
-CMakeFiles/STR.dir/all:
+CMakeFiles/STR.dir/all: CMakeFiles/shaders.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/STR.dir/build.make CMakeFiles/STR.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/STR.dir/build.make CMakeFiles/STR.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8 "Built target STR"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Built target STR"
 .PHONY : CMakeFiles/STR.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/STR.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/groot/Documents/GitHub/STR/build/CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/groot/Documents/GitHub/STR/build/CMakeFiles 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/STR.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/groot/Documents/GitHub/STR/build/CMakeFiles 0
 .PHONY : CMakeFiles/STR.dir/rule
@@ -99,6 +101,32 @@ STR: CMakeFiles/STR.dir/rule
 CMakeFiles/STR.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/STR.dir/build.make CMakeFiles/STR.dir/clean
 .PHONY : CMakeFiles/STR.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/shaders.dir
+
+# All Build rule for target.
+CMakeFiles/shaders.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shaders.dir/build.make CMakeFiles/shaders.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shaders.dir/build.make CMakeFiles/shaders.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=11,12 "Built target shaders"
+.PHONY : CMakeFiles/shaders.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/shaders.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/groot/Documents/GitHub/STR/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/shaders.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/groot/Documents/GitHub/STR/build/CMakeFiles 0
+.PHONY : CMakeFiles/shaders.dir/rule
+
+# Convenience name for target.
+shaders: CMakeFiles/shaders.dir/rule
+.PHONY : shaders
+
+# clean rule for target.
+CMakeFiles/shaders.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shaders.dir/build.make CMakeFiles/shaders.dir/clean
+.PHONY : CMakeFiles/shaders.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

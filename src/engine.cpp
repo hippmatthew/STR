@@ -10,19 +10,14 @@ namespace str
 
 Engine::~Engine()
 {
-  for (auto& material : materials)
-    material.reset();
-
   renderer.reset();
 
-  component_manager->unregister_components<P_GRAPHICS>();
+  component_manager->unregister_components<P_GRAPHICS, Material>();
   system_manager->erase<Renderer>();
 }
 
 void Engine::load()
 {
-  loadMaterials();
-
   vk::PhysicalDeviceDynamicRenderingFeatures dynamicRendering{
     .dynamicRendering = vk::True
   };
@@ -35,8 +30,6 @@ void Engine::load()
 
 void Engine::run()
 {
-  float da = la::radians(120.0f);
-
   while (!close_condition())
   {
     poll_gui();
@@ -44,21 +37,14 @@ void Engine::run()
 
     auto start_frame = std::chrono::high_resolution_clock::now();
 
+    std::vector<Transform> transforms;
+    for (auto e_id : entity_manager->retrieve<Transform>())
+      transforms.emplace_back(component_manager->retrieve<Transform>(e_id).value());
+
+    component_manager->retrieve<P_MATERIAL>(0).value()
+      ->updateTransforms(renderer->currentFrame(), transforms);
+
     renderer->update(component_manager, { 0 });
-
-    auto t = fmod(da * time, 2 * M_PI);
-    float a = 0.5 * (1.0 + cos(t));
-    float b = 0.5 * (1.0 + cos(t - da));
-    float c = 0.5 * (1.0 + cos(t - 2 * da));
-
-    component_manager->update_data<Color>(0, Color{{ b, a, c }});
-
-    auto transform = component_manager->retrieve<Transform>(0).value();
-    transform.rotate({ 0.0f, la::radians(30.0f) * delta_time, 0.0f });
-    component_manager->update_data(0, transform);
-
-    auto color = component_manager->retrieve<Color>(0).value();
-    materials[0]->updateUniforms(color);
 
     auto end_frame = std::chrono::high_resolution_clock::now();
 
@@ -70,72 +56,62 @@ void Engine::run()
   vecs_device->logical().waitIdle();
 }
 
-void Engine::loadMaterials()
-{
-  materials[0] = std::make_shared<Material>(
-    Material::Builder()
-      .shader(vk::ShaderStageFlagBits::eVertex, "spv/shader.vert.spv")
-      .shader(vk::ShaderStageFlagBits::eFragment, "spv/shader.frag.spv")
-      .uniforms<Color>()
-  );
-}
-
 void Engine::setupECS()
 {
-  entity_manager->new_entity();
-
-  component_manager->register_components<P_GRAPHICS, Transform, Color>();
+  component_manager->register_components<P_GRAPHICS, P_MATERIAL, Transform>();
 
   system_manager->emplace<Renderer>();
-  system_manager->add_components<Renderer, P_GRAPHICS, Transform>();
+  system_manager->add_components<Renderer, P_GRAPHICS, P_MATERIAL>();
   renderer = system_manager->system<Renderer>().value();
 
-  entity_manager->add_components<P_GRAPHICS, Transform, Color>(0);
+  auto viewportPlane = Renderer::viewportPlane();
 
-  P_GRAPHICS graphics = std::make_shared<Graphics>(
-    Graphics::Builder()
-      .vertices({
-        {{ 0.5, 0.5, 0.5 }},
-        {{ 0.5, 0.5, -0.5 }},
-        {{ 0.5, -0.5, 0.5 }},
-        {{ 0.5, -0.5, -0.5 }},
-        {{ -0.5, 0.5, 0.5 }},
-        {{ -0.5, 0.5, -0.5 }},
-        {{ -0.5, -0.5, 0.5 }},
-        {{ -0.5, -0.5, -0.5 }}
-      })
-      .indices({
-        0, 2, 3, 3, 1, 0,
-        4, 5, 7, 7, 6, 4,
-        1, 5, 4, 4, 0, 1,
-        3, 2, 6, 6, 7, 3,
-        0, 4, 6, 6, 2, 0,
-        1, 3, 7, 7, 5, 1
-      })
-      .material(materials[0])
+  entity_manager->new_entity();
+  entity_manager->add_components<P_GRAPHICS, Material>(0);
+  component_manager->update_data(0,
+    std::make_shared<Graphics>(
+      Graphics::Builder()
+        .vertices(viewportPlane.vertices)
+        .indices(viewportPlane.indices)
+    ),
+    std::make_shared<Material>(
+      Material::Builder()
+        .shader(vk::ShaderStageFlagBits::eVertex, "spv/viewport.vert.spv")
+        .shader(vk::ShaderStageFlagBits::eFragment, "spv/viewport.frag.spv")
+    )
   );
 
-  component_manager->update_data(0,
-    graphics,
-    Transform{}
-      .scale({ 0.5, 0.5, 0.5 })
-      .translate(5.0, { 0.0, 0.0, 1.0 }),
-    Color{{0.0, 1.0, 0.0}}
+  entity_manager->new_entity();
+  entity_manager->add_components<Transform>(1);
+  component_manager->update_data(1,
+    Transform(Shape::Sphere, 0.5)
+      .translate(3.0, { 0.0, 0.0, 1.0 })
+      .scale({ 0.5, 0.0, 0.0 })
+  );
+
+  entity_manager->new_entity();
+  entity_manager->add_components<Transform>(2);
+  component_manager->update_data(2,
+    Transform(Shape::Sphere, 0.5, { 0.0, 0.0, 1.0 })
+      .translate(6.0, { 0.1, 0.0, 1.0 })
+  );
+
+  entity_manager->new_entity();
+  entity_manager->add_components<Transform>(3);
+  component_manager->update_data(3,
+    Transform(Shape::Sphere, 0.5, { 1.0, 0.0, 0.0 })
+      .translate(5.0, { 1.0, 0.1, 1.0 })
+      .scale({ 0.75, 0.0, 0.0 })
   );
 }
 
 void Engine::loadComponents()
 {
-  component_manager->retrieve<P_GRAPHICS>(0).value()->initialize(*vecs_device);
-
   renderer->link(vecs_device, vecs_gui);
   renderer->initialize();
 
-  materials[0]->load(*vecs_device);
-
-  auto color = component_manager->retrieve<Color>(0).value();
-  materials[0]->updateUniforms<Color>(color);
-
+  component_manager->retrieve<P_MATERIAL>(0).value()->load(*vecs_device);
+  component_manager->retrieve<P_GRAPHICS>(0).value()->initialize(*vecs_device);
 }
 
 } // namespace str

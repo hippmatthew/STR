@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER clang++)
 
+find_program(GLSLC glslc REQUIRED)
+
 include_directories(
     .
     /opt/homebrew/include
@@ -18,14 +20,16 @@ link_directories(
 )
 
 set(SOURCES
-    src/include/linalg.hpp
-    src/camera.cpp
-    src/engine.cpp
-    src/graphics.cpp
-    src/main.cpp
-    src/material.cpp
-    src/renderer.cpp
-    src/transform.cpp
+    ${CMAKE_SOURCE_DIR}/src/include/linalg.hpp
+    ${CMAKE_SOURCE_DIR}/src/camera.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine.cpp
+    ${CMAKE_SOURCE_DIR}/src/graphics.cpp
+    ${CMAKE_SOURCE_DIR}/src/intersections.cpp
+    ${CMAKE_SOURCE_DIR}/src/main.cpp
+    ${CMAKE_SOURCE_DIR}/src/material.cpp
+    ${CMAKE_SOURCE_DIR}/src/renderer.cpp
+    ${CMAKE_SOURCE_DIR}/src/transform.cpp
+    ${CMAKE_SOURCE_DIR}/src/vertex.cpp
 )
 
 find_package(Vulkan REQUIRED)
@@ -38,3 +42,30 @@ target_link_libraries(STR
     glfw
     libvecs.a
 )
+
+set_target_properties(STR PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+set(SHADERS
+  ${CMAKE_SOURCE_DIR}/shaders/viewport.vert
+  ${CMAKE_SOURCE_DIR}/shaders/viewport.frag
+)
+
+foreach(SHADER ${SHADERS})
+  get_filename_component(FILE_NAME ${SHADER} NAME)
+  get_filename_component(FILE_EXT ${SHADER} EXT)
+  set(SPV ${CMAKE_SOURCE_DIR}/spv/${FILE_NAME}.spv)
+
+  add_custom_command(
+    OUTPUT ${SPV}
+    COMMAND ${GLSLC} -o ${SPV} ${SHADER}
+    DEPENDS ${SHADER}
+    COMMENT "Compiling ${SHADER}"
+  )
+
+  list(APPEND SPVS ${SPV})
+endforeach()
+
+add_custom_target(shaders ALL DEPENDS ${SPVS})
+add_dependencies(STR shaders)

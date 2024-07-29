@@ -1,8 +1,39 @@
 #include "src/include/renderer.hpp"
-#include "src/include/transform.hpp"
+
+#include <optional>
 
 namespace str
 {
+
+ViewportPlane Renderer::viewportPlane()
+{
+  std::vector<Vertex> vertices;
+  std::vector<unsigned int> indices;
+
+  unsigned int rows = VECS_SETTINGS.height();
+  unsigned int cols = VECS_SETTINGS.width();
+  float dx = 2.0 / cols;
+  float dy = 2.0 / rows;
+
+  for (unsigned long i = 0; i <= rows; ++i)
+  {
+    for (unsigned long j = 0; j <= cols; ++j)
+    {
+      vertices.emplace_back(Vertex{{ j * dx - 1, i * dy - 1, 0.1 }});
+
+      if (i == rows || j == cols) continue;
+
+      unsigned int topL = i * (cols + 1) + j;
+      unsigned int topR = topL + 1;
+      unsigned int botL = (i + 1) * (cols + 1) + j;
+      unsigned int botR = botL + 1;
+
+      indices.insert(indices.end(), { topL, botL, topR, topR, botL, botR });
+    }
+  }
+
+  return ViewportPlane{ vertices, indices };
+}
 
 void Renderer::update(
   const std::shared_ptr<vecs::ComponentManager>& component_manager,
@@ -51,6 +82,11 @@ void Renderer::update(
 void Renderer::waitFlight() const
 {
   static_cast<void>(vecs_device->logical().waitForFences(*flightFences[frame], vk::True, UINT64_MAX));
+}
+
+const unsigned int& Renderer::currentFrame() const
+{
+  return frame;
 }
 
 void Renderer::link(std::shared_ptr<vecs::Device> p_device, std::shared_ptr<vecs::GUI> p_gui)
@@ -167,36 +203,28 @@ void Renderer::render(
   if (graphics_opt == std::nullopt) return;
   auto graphics = graphics_opt.value();
 
-  auto transform_opt = component_manager->retrieve<Transform>(e_id);
-  if (transform_opt == std::nullopt) return;
-  auto transform = transform_opt.value();
-
-  auto mvpMatrix = camera.projection() * camera.view() * transform.model();
+  auto material_opt = component_manager->retrieve<P_MATERIAL>(e_id);
+  if (material_opt == std::nullopt) return;
+  auto material = material_opt.value();
 
   vk_commandBuffers[frame].bindPipeline(
     vk::PipelineBindPoint::eGraphics,
-    *graphics->material()->pipeline()
+    *material->pipeline()
   );
 
-  auto descriptorSets = graphics->material()->descriptorSets(frame);
-  vk::ArrayProxy<vk::DescriptorSet> proxy(descriptorSets.size(), descriptorSets.data());
-
-  if (!descriptorSets.empty())
-  {
-    vk_commandBuffers[frame].bindDescriptorSets(
-      vk::PipelineBindPoint::eGraphics,
-      *graphics->material()->pipelineLayout(),
-      0,
-      proxy,
-      nullptr
-    );
-  }
+  vk_commandBuffers[frame].bindDescriptorSets(
+    vk::PipelineBindPoint::eGraphics,
+    *material->pipelineLayout(),
+    0,
+    *material->descriptorSet(frame),
+    nullptr
+  );
 
   vk_commandBuffers[frame].pushConstants<la::mat<4>>(
-    *graphics->material()->pipelineLayout(),
-    vk::ShaderStageFlagBits::eVertex,
+    *material->pipelineLayout(),
+    vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
     0,
-    mvpMatrix
+    { camera.view(), camera.projection() }
   );
 
   vk_commandBuffers[frame].bindVertexBuffers(0, *graphics->vertexBuffer(), { 0 });

@@ -2,7 +2,7 @@ CMakeFiles/STR.dir/src/renderer.cpp.o: \
   /Users/groot/Documents/GitHub/STR/src/renderer.cpp \
   /Users/groot/Documents/GitHub/STR/./src/include/renderer.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/graphics.hpp \
-  /Users/groot/Documents/GitHub/STR/./src/include/material.hpp \
+  /Users/groot/Documents/GitHub/STR/./src/include/vertex.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/linalg.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/linalg_decl.hpp \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/array \
@@ -1215,6 +1215,6 @@ CMakeFiles/STR.dir/src/renderer.cpp.o: \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/__numeric/transform_inclusive_scan.h \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/set \
   /usr/local/include/vecs/./templates.hpp \
-  /Users/groot/Documents/GitHub/STR/./src/include/material_templates.hpp \
-  /Users/groot/Documents/GitHub/STR/./src/include/camera.hpp \
-  /Users/groot/Documents/GitHub/STR/./src/include/transform.hpp
+  /Users/groot/Documents/GitHub/STR/./src/include/material.hpp \
+  /Users/groot/Documents/GitHub/STR/./src/include/transform.hpp \
+  /Users/groot/Documents/GitHub/STR/./src/include/camera.hpp

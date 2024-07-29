@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+5f32ef001907789b5bb6625259c28283 /Users/groot/Documents/GitHub/STR/spv/viewport.frag.spv
+89cb72a192528dcabcb79fcd7ba3de14 /Users/groot/Documents/GitHub/STR/spv/viewport.vert.spv
+966f759784c8a413b38ef6bdc1d20c94 CMakeFiles/shaders

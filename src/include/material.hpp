@@ -1,32 +1,20 @@
 #ifndef str_material_hpp
 #define str_material_hpp
 
-#include "src/include/linalg.hpp"
+#include "src/include/transform.hpp"
 
 #include <vecs/vecs.hpp>
 
-#include <memory>
-#include <optional>
 #include <string>
+
+#define STR_MAX_OBJECTS 10u
 
 namespace str
 {
 
-struct UniformInfo
-{
-  unsigned long index;
-  unsigned long size;
-  vk::DeviceSize offset = 0;
-};
-
-class Vertex
-{
-  public:
-    static vk::VertexInputBindingDescription binding();
-    static std::array<vk::VertexInputAttributeDescription, 1> attributes();
-  
-  public:
-    la::vec<3> position;
+struct TransformBuffer{
+  unsigned int count;
+  std::array<Transform, STR_MAX_OBJECTS> transforms;
 };
 
 class Material
@@ -48,49 +36,36 @@ class Material
 
         MaterialBuilder& shader(vk::ShaderStageFlagBits, std::string);
 
-        template <typename... Tps>
-        MaterialBuilder& uniforms();
-
-      private:
-        template <typename T>
-        void uniform();
-      
       private:
         std::vector<std::pair<vk::ShaderStageFlagBits, std::string>> paths;
-        std::map<const char *, unsigned long> indexMap;
-        std::vector<UniformInfo> uniformInfo;
     };
-  
-  friend class MaterialBuilder;
-  
+
   public:
     Material() = default;
-    Material(const Material&) = delete;
-    Material(Material&&) = delete;
+    Material(const Material&);
+    Material(Material&&);
     Material(const MaterialBuilder&);
 
     ~Material() = default;
 
-    Material& operator = (const Material&) = delete;
-    Material& operator = (Material&&) = delete;
-    void operator = (const MaterialBuilder&);
+    Material& operator = (const Material&);
+    Material& operator = (Material&&);
+    Material& operator = (const MaterialBuilder&);
 
     static MaterialBuilder Builder();
 
     const vk::raii::Pipeline& pipeline() const;
     const vk::raii::PipelineLayout& pipelineLayout() const;
     const vk::raii::DescriptorSetLayout& descriptorLayout() const;
-    std::vector<vk::DescriptorSet> descriptorSets(unsigned long) const;
+    const vk::raii::DescriptorSet& descriptorSet(unsigned long) const;
 
     void load(const vecs::Device&);
-    
-    template <typename... Tps>
-    void updateUniforms(Tps&...);
-    
+    void updateTransforms(unsigned long, const std::vector<Transform>&);
+
   private:
-    std::vector<char> read(const std::string&) const; 
+    std::vector<char> read(const std::string&) const;
     std::vector<std::pair<vk::ShaderStageFlagBits, vk::raii::ShaderModule>> shaderModules(const vecs::Device&) const;
-    
+
     std::vector<vk::PipelineShaderStageCreateInfo> createInfos(
       const std::vector<std::pair<vk::ShaderStageFlagBits, vk::raii::ShaderModule>>&
     ) const;
@@ -105,27 +80,21 @@ class Material
     void allocateUniforms(const vecs::Device&);
     void loadDescriptors(const vecs::Device&);
 
-    template <typename T>
-    void updateUniform(T&);
-  
   private:
     std::vector<std::pair<vk::ShaderStageFlagBits, std::string>> paths;
-    std::map<const char *, unsigned long> indexMap;
-    std::vector<UniformInfo> uniformInfo;
-    
+
     vk::raii::DescriptorSetLayout vk_descriptorLayout = nullptr;
     vk::raii::PipelineLayout vk_pipelineLayout = nullptr;
     vk::raii::Pipeline vk_pipeline = nullptr;
 
     vk::raii::DeviceMemory vk_memory = nullptr;
-    std::vector<vk::raii::Buffer> vk_uniforms;
+    std::vector<vk::raii::Buffer> vk_buffers;
+    std::vector<vk::DeviceSize> offsets;
 
     vk::raii::DescriptorPool vk_descriptorPool = nullptr;
     std::vector<vk::raii::DescriptorSets> vk_descriptorSets;
 };
 
 } // namespace str
-
-#include "src/include/material_templates.hpp"
 
 #endif // str_material_hpp

@@ -313,15 +313,15 @@ mat<M, N, T> mat<M, N, T>::view_matrix(vec<3, T> ws_r, vec<3, T> ws_t, vec<3, T>
 {
   static_assert(M == 4 && N == 4, "view_matrix must be type la::mat<4, 4, T>");
 
-  vec<3> cs_z = (ws_t - ws_r).normalized();
-  vec<3> cs_x = (cs_z % ws_y).normalized();
-  vec<3> cs_y = cs_x % cs_z;
+  vec<3, T> cs_z = (ws_t - ws_r).normalized();
+  vec<3, T> cs_x = (cs_z % ws_y).normalized();
+  vec<3, T> cs_y = cs_x % cs_z;
 
   return mat<4, 4, T>{
-    { cs_x[0], cs_y[0], cs_z[0], 0.0 },
-    { cs_x[1], cs_y[1], cs_z[1], 0.0 },
-    { cs_x[2], cs_y[2], cs_z[2], 0.0 },
-    { -ws_r * cs_x, -ws_r * cs_y, -ws_r * cs_z, 1.0 }
+    vec<4, T>(cs_x, { -ws_r * cs_x }),
+    vec<4, T>(cs_y, { -ws_r * cs_y }),
+    vec<4, T>(cs_z, { -ws_r * cs_z }),
+    { 0.0, 0.0, 0.0, 1.0 }
   };
 }
 

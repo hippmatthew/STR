@@ -111,10 +111,24 @@ CMakeFiles/STR.dir/src/graphics.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/STR.dir/src/graphics.cpp.s"
 	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/groot/Documents/GitHub/STR/src/graphics.cpp -o CMakeFiles/STR.dir/src/graphics.cpp.s
 
+CMakeFiles/STR.dir/src/intersections.cpp.o: CMakeFiles/STR.dir/flags.make
+CMakeFiles/STR.dir/src/intersections.cpp.o: /Users/groot/Documents/GitHub/STR/src/intersections.cpp
+CMakeFiles/STR.dir/src/intersections.cpp.o: CMakeFiles/STR.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/STR.dir/src/intersections.cpp.o"
+	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/STR.dir/src/intersections.cpp.o -MF CMakeFiles/STR.dir/src/intersections.cpp.o.d -o CMakeFiles/STR.dir/src/intersections.cpp.o -c /Users/groot/Documents/GitHub/STR/src/intersections.cpp
+
+CMakeFiles/STR.dir/src/intersections.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/STR.dir/src/intersections.cpp.i"
+	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/groot/Documents/GitHub/STR/src/intersections.cpp > CMakeFiles/STR.dir/src/intersections.cpp.i
+
+CMakeFiles/STR.dir/src/intersections.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/STR.dir/src/intersections.cpp.s"
+	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/groot/Documents/GitHub/STR/src/intersections.cpp -o CMakeFiles/STR.dir/src/intersections.cpp.s
+
 CMakeFiles/STR.dir/src/main.cpp.o: CMakeFiles/STR.dir/flags.make
 CMakeFiles/STR.dir/src/main.cpp.o: /Users/groot/Documents/GitHub/STR/src/main.cpp
 CMakeFiles/STR.dir/src/main.cpp.o: CMakeFiles/STR.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/STR.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/STR.dir/src/main.cpp.o"
 	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/STR.dir/src/main.cpp.o -MF CMakeFiles/STR.dir/src/main.cpp.o.d -o CMakeFiles/STR.dir/src/main.cpp.o -c /Users/groot/Documents/GitHub/STR/src/main.cpp
 
 CMakeFiles/STR.dir/src/main.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/STR.dir/src/main.cpp.s: cmake_force
 CMakeFiles/STR.dir/src/material.cpp.o: CMakeFiles/STR.dir/flags.make
 CMakeFiles/STR.dir/src/material.cpp.o: /Users/groot/Documents/GitHub/STR/src/material.cpp
 CMakeFiles/STR.dir/src/material.cpp.o: CMakeFiles/STR.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/STR.dir/src/material.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/STR.dir/src/material.cpp.o"
 	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/STR.dir/src/material.cpp.o -MF CMakeFiles/STR.dir/src/material.cpp.o.d -o CMakeFiles/STR.dir/src/material.cpp.o -c /Users/groot/Documents/GitHub/STR/src/material.cpp
 
 CMakeFiles/STR.dir/src/material.cpp.i: cmake_force
@@ -142,7 +156,7 @@ CMakeFiles/STR.dir/src/material.cpp.s: cmake_force
 CMakeFiles/STR.dir/src/renderer.cpp.o: CMakeFiles/STR.dir/flags.make
 CMakeFiles/STR.dir/src/renderer.cpp.o: /Users/groot/Documents/GitHub/STR/src/renderer.cpp
 CMakeFiles/STR.dir/src/renderer.cpp.o: CMakeFiles/STR.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/STR.dir/src/renderer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/STR.dir/src/renderer.cpp.o"
 	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/STR.dir/src/renderer.cpp.o -MF CMakeFiles/STR.dir/src/renderer.cpp.o.d -o CMakeFiles/STR.dir/src/renderer.cpp.o -c /Users/groot/Documents/GitHub/STR/src/renderer.cpp
 
 CMakeFiles/STR.dir/src/renderer.cpp.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/STR.dir/src/renderer.cpp.s: cmake_force
 CMakeFiles/STR.dir/src/transform.cpp.o: CMakeFiles/STR.dir/flags.make
 CMakeFiles/STR.dir/src/transform.cpp.o: /Users/groot/Documents/GitHub/STR/src/transform.cpp
 CMakeFiles/STR.dir/src/transform.cpp.o: CMakeFiles/STR.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/STR.dir/src/transform.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/STR.dir/src/transform.cpp.o"
 	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/STR.dir/src/transform.cpp.o -MF CMakeFiles/STR.dir/src/transform.cpp.o.d -o CMakeFiles/STR.dir/src/transform.cpp.o -c /Users/groot/Documents/GitHub/STR/src/transform.cpp
 
 CMakeFiles/STR.dir/src/transform.cpp.i: cmake_force
@@ -167,35 +181,53 @@ CMakeFiles/STR.dir/src/transform.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/STR.dir/src/transform.cpp.s"
 	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/groot/Documents/GitHub/STR/src/transform.cpp -o CMakeFiles/STR.dir/src/transform.cpp.s
 
+CMakeFiles/STR.dir/src/vertex.cpp.o: CMakeFiles/STR.dir/flags.make
+CMakeFiles/STR.dir/src/vertex.cpp.o: /Users/groot/Documents/GitHub/STR/src/vertex.cpp
+CMakeFiles/STR.dir/src/vertex.cpp.o: CMakeFiles/STR.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/STR.dir/src/vertex.cpp.o"
+	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/STR.dir/src/vertex.cpp.o -MF CMakeFiles/STR.dir/src/vertex.cpp.o.d -o CMakeFiles/STR.dir/src/vertex.cpp.o -c /Users/groot/Documents/GitHub/STR/src/vertex.cpp
+
+CMakeFiles/STR.dir/src/vertex.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/STR.dir/src/vertex.cpp.i"
+	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/groot/Documents/GitHub/STR/src/vertex.cpp > CMakeFiles/STR.dir/src/vertex.cpp.i
+
+CMakeFiles/STR.dir/src/vertex.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/STR.dir/src/vertex.cpp.s"
+	clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/groot/Documents/GitHub/STR/src/vertex.cpp -o CMakeFiles/STR.dir/src/vertex.cpp.s
+
 # Object files for target STR
 STR_OBJECTS = \
 "CMakeFiles/STR.dir/src/camera.cpp.o" \
 "CMakeFiles/STR.dir/src/engine.cpp.o" \
 "CMakeFiles/STR.dir/src/graphics.cpp.o" \
+"CMakeFiles/STR.dir/src/intersections.cpp.o" \
 "CMakeFiles/STR.dir/src/main.cpp.o" \
 "CMakeFiles/STR.dir/src/material.cpp.o" \
 "CMakeFiles/STR.dir/src/renderer.cpp.o" \
-"CMakeFiles/STR.dir/src/transform.cpp.o"
+"CMakeFiles/STR.dir/src/transform.cpp.o" \
+"CMakeFiles/STR.dir/src/vertex.cpp.o"
 
 # External object files for target STR
 STR_EXTERNAL_OBJECTS =
 
-STR: CMakeFiles/STR.dir/src/camera.cpp.o
-STR: CMakeFiles/STR.dir/src/engine.cpp.o
-STR: CMakeFiles/STR.dir/src/graphics.cpp.o
-STR: CMakeFiles/STR.dir/src/main.cpp.o
-STR: CMakeFiles/STR.dir/src/material.cpp.o
-STR: CMakeFiles/STR.dir/src/renderer.cpp.o
-STR: CMakeFiles/STR.dir/src/transform.cpp.o
-STR: CMakeFiles/STR.dir/build.make
-STR: /usr/local/lib/libvulkan.dylib
-STR: /opt/homebrew/lib/libglfw.3.4.dylib
-STR: CMakeFiles/STR.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable STR"
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/camera.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/engine.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/graphics.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/intersections.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/main.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/material.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/renderer.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/transform.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/src/vertex.cpp.o
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/build.make
+/Users/groot/Documents/GitHub/STR/STR: /usr/local/lib/libvulkan.dylib
+/Users/groot/Documents/GitHub/STR/STR: /opt/homebrew/lib/libglfw.3.4.dylib
+/Users/groot/Documents/GitHub/STR/STR: CMakeFiles/STR.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/groot/Documents/GitHub/STR/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable /Users/groot/Documents/GitHub/STR/STR"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/STR.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/STR.dir/build: STR
+CMakeFiles/STR.dir/build: /Users/groot/Documents/GitHub/STR/STR
 .PHONY : CMakeFiles/STR.dir/build
 
 CMakeFiles/STR.dir/clean:

@@ -17,17 +17,17 @@ class Engine : public vecs::Engine
     void run() override;
 
   private:
-    void loadMaterials();
     void setupECS();
     void loadComponents();
 
   private:
-    std::shared_ptr<Renderer> renderer;
-    std::array<std::shared_ptr<Material>, 2> materials;
-
     float time = 0.0f;
     float prevTime = 0.0f;
     float delta_time = 0.0f;
+
+    std::vector<Transform> transforms;
+
+    std::shared_ptr<Renderer> renderer;
 };
 
 } // namespace str

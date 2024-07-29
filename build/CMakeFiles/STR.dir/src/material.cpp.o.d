@@ -1,6 +1,7 @@
 CMakeFiles/STR.dir/src/material.cpp.o: \
   /Users/groot/Documents/GitHub/STR/src/material.cpp \
   /Users/groot/Documents/GitHub/STR/./src/include/material.hpp \
+  /Users/groot/Documents/GitHub/STR/./src/include/transform.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/linalg.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/linalg_decl.hpp \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/array \
@@ -1213,7 +1214,8 @@ CMakeFiles/STR.dir/src/material.cpp.o: \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/__numeric/transform_inclusive_scan.h \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/set \
   /usr/local/include/vecs/./templates.hpp \
-  /Users/groot/Documents/GitHub/STR/./src/include/material_templates.hpp \
+  /Users/groot/Documents/GitHub/STR/./src/include/vertex.hpp \
+  /opt/homebrew/opt/llvm/bin/../include/c++/v1/iostream \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/fstream \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/filesystem \
   /opt/homebrew/opt/llvm/bin/../include/c++/v1/__filesystem/copy_options.h \

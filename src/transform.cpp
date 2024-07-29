@@ -3,29 +3,19 @@
 namespace str
 {
 
+Transform::Transform(Shape sh, float sm, la::vec<3> col)
+{
+  shape = sh;
+
+  if (sm < 0) sm = 0;
+  else if (sm > 1) sm = 1;
+
+  smoothess = sm;
+  color = col;
+}
+
 const la::mat<4> Transform::model() const
 {
-  // la::mat<4> Rx{
-  //   { 1.0, 0.0, 0.0, 0.0 },
-  //   { 0.0, cos(rotation[0]), sin(rotation[0]), 0.0 },
-  //   { 0.0, -sin(rotation[0]), cos(rotation[0]), 0.0 },
-  //   { 0.0, 0.0, 0.0, 1.0 }
-  // };
-
-  // la::mat<4> Ry{
-  //   { cos(rotation[1]), 0.0, -sin(rotation[1]), 0.0 },
-  //   { 0.0, 1.0, 0.0, 0.0 },
-  //   { sin(rotation[1]), 0.0, cos(rotation[1]), 0.0 },
-  //   { 0.0, 0.0, 0.0, 1.0 }
-  // };
-
-  // la::mat<4> Rz{
-  //   { cos(rotation[2]), sin(rotation[2]), 0.0, 0.0 },
-  //   { -sin(rotation[2]), cos(rotation[2]), 0.0, 0.0 },
-  //   { 0.0, 0.0, 1.0, 0.0 },
-  //   { 0.0, 0.0, 0.0, 1.0 }
-  // };
-
   la::mat<4> Rx = la::mat<4>::rotation_matrix(rotation[0], { 1.0, 0.0, 0.0 });
   la::mat<4> Ry = la::mat<4>::rotation_matrix(rotation[1], { 0.0, -1.0, 0.0 });
   la::mat<4> Rz = la::mat<4>::rotation_matrix(rotation[2], { 0.0, 0.0, 1.0 });

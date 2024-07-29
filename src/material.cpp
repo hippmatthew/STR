@@ -1,32 +1,11 @@
 #include "src/include/material.hpp"
+#include "src/include/vertex.hpp"
 
+#include <iostream>
 #include <fstream>
-
-#include <glm/glm.hpp>
 
 namespace str
 {
-
-vk::VertexInputBindingDescription Vertex::binding()
-{
-  return vk::VertexInputBindingDescription{
-    .binding    = 0,
-    .stride     = sizeof(Vertex),
-    .inputRate  = vk::VertexInputRate::eVertex
-  };
-}
-
-std::array<vk::VertexInputAttributeDescription, 1> Vertex::attributes()
-{
-  return std::array<vk::VertexInputAttributeDescription, 1>{
-    vk::VertexInputAttributeDescription{
-      .location = 0,
-      .binding  = 0,
-      .format   = vk::Format::eR32G32B32Sfloat,
-      .offset   = __offsetof(Vertex, position)
-    }
-  };
-}
 
 Material::MaterialBuilder& Material::MaterialBuilder::shader(vk::ShaderStageFlagBits stage, std::string path)
 {
@@ -34,18 +13,37 @@ Material::MaterialBuilder& Material::MaterialBuilder::shader(vk::ShaderStageFlag
   return *this;
 }
 
+Material::Material(const Material& mat)
+{
+  paths = mat.paths;
+}
+
+Material::Material(Material&& mat)
+{
+  paths = std::move(mat.paths);
+}
+
 Material::Material(const MaterialBuilder& builder)
 {
   paths = builder.paths;
-  indexMap = builder.indexMap;
-  uniformInfo = builder.uniformInfo;
 }
 
-void Material::operator = (const MaterialBuilder& builder)
+Material& Material::operator = (const Material& mat)
+{
+  paths = mat.paths;
+  return *this;
+}
+
+Material& Material::operator = (Material&& mat)
+{
+  paths = std::move(mat.paths);
+  return *this;
+}
+
+Material& Material::operator = (const MaterialBuilder& builder)
 {
   paths = builder.paths;
-  indexMap = builder.indexMap;
-  uniformInfo = builder.uniformInfo;
+  return *this;
 }
 
 Material::MaterialBuilder Material::Builder()
@@ -68,13 +66,9 @@ const vk::raii::DescriptorSetLayout& Material::descriptorLayout() const
   return vk_descriptorLayout;
 }
 
-std::vector<vk::DescriptorSet> Material::descriptorSets(unsigned long frame) const
+const vk::raii::DescriptorSet& Material::descriptorSet(unsigned long frame) const
 {
-  std::vector<vk::DescriptorSet> sets;
-  for (const auto& set : vk_descriptorSets[frame])
-    sets.emplace_back(*set);
-
-  return sets;
+  return vk_descriptorSets[frame][0];
 }
 
 std::vector<char> Material::read(const std::string& path) const
@@ -100,14 +94,30 @@ void Material::load(const vecs::Device& vecs_device)
   loadDescriptors(vecs_device);
 }
 
+void Material::updateTransforms(unsigned long frame, const std::vector<Transform>& ts)
+{
+  std::array<Transform, STR_MAX_OBJECTS> transforms;
+  for (unsigned long i = 0; i < (STR_MAX_OBJECTS < ts.size() ? STR_MAX_OBJECTS : ts.size()); ++i)
+    transforms[i] = ts[i];
+
+  TransformBuffer buffer{
+    .count      = transforms.size(),
+    .transforms = transforms
+  };
+
+  void * memory = vk_memory.mapMemory(offsets[frame], sizeof(TransformBuffer));
+  memcpy(memory, &buffer, sizeof(buffer));
+  vk_memory.unmapMemory();
+}
+
 std::vector<std::pair<vk::ShaderStageFlagBits, vk::raii::ShaderModule>> Material::shaderModules(const vecs::Device& vecs_device) const
 {
   std::vector<std::pair<vk::ShaderStageFlagBits, vk::raii::ShaderModule>> modules;
-  
+
   for (const auto& path : paths)
   {
     auto code = read(path.second);
-    
+
     vk::ShaderModuleCreateInfo ci_module{
       .codeSize = code.size(),
       .pCode    = reinterpret_cast<const unsigned int *>(code.data())
@@ -146,7 +156,7 @@ unsigned int Material::findIndex(
 ) const
 {
   auto properties = vk_physicalDevice.getMemoryProperties();
-  
+
   for (unsigned long i = 0; i < properties.memoryTypeCount; ++i)
   {
     if ((filter & (1 << i)) &&
@@ -155,7 +165,7 @@ unsigned int Material::findIndex(
       return i;
     }
   }
-  
+
   throw std::runtime_error("error @ str::Graphics::findIndex() : could not find suitable memory index");
 }
 
@@ -197,7 +207,7 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
     .depthClampEnable         = vk::False,
     .rasterizerDiscardEnable  = vk::False,
     .polygonMode              = vk::PolygonMode::eFill,
-    .cullMode                 = vk::CullModeFlagBits::eNone,
+    .cullMode                 = vk::CullModeFlagBits::eBack,
     .frontFace                = vk::FrontFace::eCounterClockwise,
     .depthBiasEnable          = vk::False,
     .depthBiasConstantFactor  = 0.0f,
@@ -236,36 +246,31 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
     .pAttachments     = &blendState
   };
 
-  std::vector<vk::DescriptorSetLayoutBinding> uniformBindings;
-  for (unsigned int i = 0; i < uniformInfo.size(); ++i)
-  {
-    vk::DescriptorSetLayoutBinding uniformBinding{
-      .binding          = static_cast<unsigned int>(uniformInfo[i].index),
-      .descriptorType   = vk::DescriptorType::eUniformBuffer,
-      .descriptorCount  = 1,
-      .stageFlags       = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
-    };
-    uniformBindings.emplace_back(uniformBinding);
-  }
+  vk::DescriptorSetLayoutBinding transformsBinding{
+    .binding          = 0,
+    .descriptorType   = vk::DescriptorType::eStorageBuffer,
+    .descriptorCount  = 1,
+    .stageFlags       = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
+  };
 
   vk::DescriptorSetLayoutCreateInfo ci_descriptorLayout{
-    .bindingCount = static_cast<unsigned int>(uniformBindings.size()),
-    .pBindings    = uniformBindings.data()
+    .bindingCount = 1,
+    .pBindings    = &transformsBinding
   };
 
   vk_descriptorLayout = vecs_device.logical().createDescriptorSetLayout(ci_descriptorLayout);
 
-  vk::PushConstantRange mvpMatrixRange{
-    .stageFlags = vk::ShaderStageFlagBits::eVertex,
+  vk::PushConstantRange matrices{
+    .stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
     .offset     = 0,
-    .size       = sizeof(la::mat<4>)
+    .size       = 2 * sizeof(la::mat<4>)
   };
 
   vk::PipelineLayoutCreateInfo ci_pipelineLayout{
     .setLayoutCount         = 1,
     .pSetLayouts            = &*vk_descriptorLayout,
     .pushConstantRangeCount = 1,
-    .pPushConstantRanges    = &mvpMatrixRange
+    .pPushConstantRanges    = &matrices
   };
 
   vk_pipelineLayout = vecs_device.logical().createPipelineLayout(ci_pipelineLayout);
@@ -296,55 +301,54 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
 
 void Material::allocateUniforms(const vecs::Device& vecs_device)
 {
-  vk::DeviceSize size = 0;
-  unsigned int filter = 0;
-  for (unsigned long i = 0; i < uniformInfo.size(); ++i)
+  vk::DeviceSize size = sizeof(TransformBuffer);
+
+  vk::BufferCreateInfo ci_buffer{
+    .size         = size,
+    .usage        = vk::BufferUsageFlagBits::eStorageBuffer,
+    .sharingMode  = vk::SharingMode::eExclusive
+  };
+
+  for (unsigned long i = 0; i < VECS_SETTINGS.max_flight_frames(); ++i)
+    vk_buffers.emplace_back(vecs_device.logical().createBuffer(ci_buffer));
+
+  size = 0;
+  for (const auto& vk_buffer : vk_buffers)
   {
-    UniformInfo info = uniformInfo[i];
+    auto requirements = vk_buffer.getMemoryRequirements();
 
-    vk::BufferCreateInfo ci_buffer{
-      .size         = static_cast<unsigned int>(info.size),
-      .usage        = vk::BufferUsageFlagBits::eUniformBuffer,
-      .sharingMode  = vk::SharingMode::eExclusive
-    };
-    vk_uniforms.emplace_back(vecs_device.logical().createBuffer(ci_buffer));
-
-    auto requirements = vk_uniforms.back().getMemoryRequirements();
-    
     while (size % requirements.alignment != 0)
       ++size;
 
-    info.offset = size;
-    uniformInfo[i] = info;
-
+    offsets.emplace_back(size);
     size += requirements.size;
-    filter |= requirements.memoryTypeBits;
   }
 
   vk::MemoryAllocateInfo ai_memory{
     .allocationSize = size,
     .memoryTypeIndex = findIndex(
       vecs_device.physical(),
-      filter,
-      vk::MemoryPropertyFlagBits::eHostVisible |vk::MemoryPropertyFlagBits::eHostCoherent
+      vk_buffers[0].getMemoryRequirements().memoryTypeBits,
+      vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     )
   };
   vk_memory = vecs_device.logical().allocateMemory(ai_memory);
 
-  for (unsigned long i = 0; i < uniformInfo.size(); ++i)
-    vk_uniforms[i].bindMemory(*vk_memory, uniformInfo[i].offset);
-} 
+  unsigned long index = 0;
+  for (const auto& vk_buffer : vk_buffers)
+    vk_buffer.bindMemory(*vk_memory, offsets[index++]);
+}
 
 void Material::loadDescriptors(const vecs::Device& vecs_device)
 {
   vk::DescriptorPoolSize poolSize{
-    .type             = vk::DescriptorType::eUniformBuffer,
-    .descriptorCount  = static_cast<unsigned int>(VECS_SETTINGS.max_flight_frames() * uniformInfo.size())
+    .type             = vk::DescriptorType::eStorageBuffer,
+    .descriptorCount  = static_cast<unsigned int>(VECS_SETTINGS.max_flight_frames())
   };
 
   vk::DescriptorPoolCreateInfo ci_descriptorPool{
     .flags          = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-    .maxSets        = static_cast<unsigned int>(VECS_SETTINGS.max_flight_frames() * uniformInfo.size()),
+    .maxSets        = static_cast<unsigned int>(VECS_SETTINGS.max_flight_frames()),
     .poolSizeCount  = 1,
     .pPoolSizes     = &poolSize
   };
@@ -352,35 +356,31 @@ void Material::loadDescriptors(const vecs::Device& vecs_device)
   vk_descriptorPool = vecs_device.logical().createDescriptorPool(ci_descriptorPool);
 
   std::vector<vk::WriteDescriptorSet> writes;
-
   for (unsigned long i = 0; i < VECS_SETTINGS.max_flight_frames(); ++i)
   {
-    vk::DescriptorSetAllocateInfo ai_descriptorSets{
+    vk::DescriptorSetAllocateInfo ai_descriptors{
       .descriptorPool     = *vk_descriptorPool,
-      .descriptorSetCount = static_cast<unsigned int>(uniformInfo.size()),
+      .descriptorSetCount = 1u,
       .pSetLayouts        = &*vk_descriptorLayout
     };
-    vk_descriptorSets.emplace_back(vk::raii::DescriptorSets(vecs_device.logical(), ai_descriptorSets));
+    vk_descriptorSets.emplace_back(vk::raii::DescriptorSets(vecs_device.logical(), ai_descriptors));
 
-    for (unsigned long j = 0; j < uniformInfo.size(); ++j)
-    {
-      vk::DescriptorBufferInfo bufferInfo{
-        .buffer = *vk_uniforms[j],
-        .offset = 0,
-        .range  = static_cast<unsigned int>(uniformInfo[j].size)
-      };
+    vk::DescriptorBufferInfo bufferInfo{
+      .buffer = *vk_buffers[i],
+      .offset = 0,
+      .range  = sizeof(TransformBuffer)
+    };
 
-      vk::WriteDescriptorSet write{
-        .dstSet           = *vk_descriptorSets[i][j],
-        .dstBinding       = static_cast<unsigned int>(uniformInfo[j].index),
-        .dstArrayElement  = 0,
-        .descriptorCount  = 1,
-        .descriptorType   = vk::DescriptorType::eUniformBuffer,
-        .pBufferInfo      = &bufferInfo
-      };
+    vk::WriteDescriptorSet write{
+      .dstSet           = *vk_descriptorSets[i][0],
+      .dstBinding       = 0,
+      .dstArrayElement  = 0,
+      .descriptorCount  = 1,
+      .descriptorType   = vk::DescriptorType::eStorageBuffer,
+      .pBufferInfo      = &bufferInfo
+    };
 
-      writes.emplace_back(write);
-    }
+    writes.emplace_back(write);
   }
 
   vk::ArrayProxy<vk::WriteDescriptorSet> proxy(writes.size(), writes.data());

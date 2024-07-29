@@ -15,31 +15,22 @@ Graphics::GraphicsBuilder& Graphics::GraphicsBuilder::indices(std::vector<unsign
   return *this;
 }
 
-Graphics::GraphicsBuilder& Graphics::GraphicsBuilder::material(std::shared_ptr<Material> m)
-{
-  mat = m;
-  return *this;
-}
-
 Graphics::Graphics(const Graphics& graphics)
 {
   vertices = graphics.vertices;
   indices = graphics.indices;
-  p_material = graphics.p_material;
 }
 
 Graphics::Graphics(Graphics&& graphics)
 {
   vertices = std::move(graphics.vertices);
   indices = std::move(graphics.indices);
-  p_material = std::move(graphics.p_material);
 }
 
 Graphics::Graphics(const GraphicsBuilder& builder)
 {
   vertices = std::move(builder.verts);
   indices = std::move(builder.inds);
-  p_material = std::move(builder.mat);
 }
 
 Graphics& Graphics::operator = (const Graphics& graphics)
@@ -48,7 +39,6 @@ Graphics& Graphics::operator = (const Graphics& graphics)
 
   vertices = graphics.vertices;
   indices = graphics.indices;
-  p_material = graphics.p_material;
 
   return *this;
 }
@@ -59,7 +49,6 @@ Graphics& Graphics::operator = (Graphics&& graphics)
 
   vertices = std::move(graphics.vertices);
   indices = std::move(graphics.indices);
-  p_material = std::move(graphics.p_material);
 
   return *this;
 }
@@ -68,7 +57,6 @@ Graphics& Graphics::operator = (const GraphicsBuilder& builder)
 {
   vertices = std::move(builder.verts);
   indices = std::move(builder.inds);
-  p_material = std::move(builder.mat);
 
   return *this;
 }
@@ -86,11 +74,6 @@ const vk::raii::Buffer& Graphics::vertexBuffer() const
 const vk::raii::Buffer& Graphics::indexBuffer() const
 {
   return vk_indexBuffer;
-}
-
-std::shared_ptr<Material> Graphics::material() const
-{
-  return p_material;
 }
 
 const unsigned long Graphics::indexCount() const

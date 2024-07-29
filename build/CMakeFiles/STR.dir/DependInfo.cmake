@@ -11,10 +11,12 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/groot/Documents/GitHub/STR/src/camera.cpp" "CMakeFiles/STR.dir/src/camera.cpp.o" "gcc" "CMakeFiles/STR.dir/src/camera.cpp.o.d"
   "/Users/groot/Documents/GitHub/STR/src/engine.cpp" "CMakeFiles/STR.dir/src/engine.cpp.o" "gcc" "CMakeFiles/STR.dir/src/engine.cpp.o.d"
   "/Users/groot/Documents/GitHub/STR/src/graphics.cpp" "CMakeFiles/STR.dir/src/graphics.cpp.o" "gcc" "CMakeFiles/STR.dir/src/graphics.cpp.o.d"
+  "/Users/groot/Documents/GitHub/STR/src/intersections.cpp" "CMakeFiles/STR.dir/src/intersections.cpp.o" "gcc" "CMakeFiles/STR.dir/src/intersections.cpp.o.d"
   "/Users/groot/Documents/GitHub/STR/src/main.cpp" "CMakeFiles/STR.dir/src/main.cpp.o" "gcc" "CMakeFiles/STR.dir/src/main.cpp.o.d"
   "/Users/groot/Documents/GitHub/STR/src/material.cpp" "CMakeFiles/STR.dir/src/material.cpp.o" "gcc" "CMakeFiles/STR.dir/src/material.cpp.o.d"
   "/Users/groot/Documents/GitHub/STR/src/renderer.cpp" "CMakeFiles/STR.dir/src/renderer.cpp.o" "gcc" "CMakeFiles/STR.dir/src/renderer.cpp.o.d"
   "/Users/groot/Documents/GitHub/STR/src/transform.cpp" "CMakeFiles/STR.dir/src/transform.cpp.o" "gcc" "CMakeFiles/STR.dir/src/transform.cpp.o.d"
+  "/Users/groot/Documents/GitHub/STR/src/vertex.cpp" "CMakeFiles/STR.dir/src/vertex.cpp.o" "gcc" "CMakeFiles/STR.dir/src/vertex.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
