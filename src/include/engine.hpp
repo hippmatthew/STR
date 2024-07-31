@@ -5,6 +5,8 @@
 
 #include <vecs/vecs.hpp>
 
+#define SAMPLE_SIZE 50
+
 namespace str
 {
 
@@ -17,13 +19,16 @@ class Engine : public vecs::Engine
     void run() override;
 
   private:
+    float average() const;
+
     void setupECS();
     void loadComponents();
 
+
   private:
-    float time = 0.0f;
-    float prevTime = 0.0f;
     float delta_time = 0.0f;
+    std::array<float, SAMPLE_SIZE> timings;
+    unsigned long index = 0;
 
     std::vector<Transform> transforms;
 

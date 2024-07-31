@@ -28,23 +28,37 @@ layout(set = 0, binding = 0) buffer TransformSSBO {
   Transform transforms[];
 } ssbo;
 
-layout( push_constant ) uniform Camera {
-  mat4 view;
-  mat4 proj;
-} camera;
-
-layout(location = 0) in vec3 vPos;
+layout(location = 0) in vec3 origin;
+layout(location = 1) in vec3 vPos;
 
 layout(location = 0) out vec4 fColor;
 
-const uint MAX_BOUNCES = 1;
+const float inf = float(1.0 / 0.0);
+const vec3 SKY_LIGHT = vec3(0.5294, 0.8078, 0.9216);
+const vec3 SKY_DARK = vec3(0.0980, 0.0980, 0.4392);
+const uint MAX_BOUNCES = 10;
 
-HitInfo rayToSphere(Transform transform, Ray ray) {
-  vec3 L = ray.origin - transform.position;
+HitInfo RaySphere(Ray, Transform);
+Ray trace(Ray);
+
+void main() {
+  Ray ray = Ray(
+    origin,
+    normalize(vPos - origin),
+    vec3(0.0, 0.0, 0.0)
+  );
+
+  ray = trace(ray);
+
+  fColor = vec4(ray.color, 1.0);
+}
+
+HitInfo RaySphere(Transform transform, Ray ray) {
+  vec3 O = ray.origin - transform.position;
   float R = transform.size[0];
 
-  float b = 2 * dot(L, ray.dir);
-  float c = dot(L, L) - R * R;
+  float b = 2 * dot(O, ray.dir);
+  float c = dot(O, O) - R * R;
   float disc = b * b - 4 * c;
 
   if (disc < 0) {
@@ -57,66 +71,50 @@ HitInfo rayToSphere(Transform transform, Ray ray) {
     );
   }
 
-  float t = min(-(b + sqrt(disc)) / 2, (-b + sqrt(disc)) / 2);
-
+  float t = -(b + sqrt(disc)) / 2;
   vec3 P = ray.origin + t * ray.dir;
-  vec3 normal = normalize(P - transform.position);
 
   return HitInfo(
     true,
     t,
     P,
-    normal,
+    normalize(P - transform.position),
     transform.color
   );
 }
 
-void main()
-{
-  Ray ray = Ray(
-    vec3(camera.view[3]),
-    vPos,
-    vec3(0.0, 0.0, 0.0)
-  );
-
+Ray trace(Ray ray) {
   for (uint i = 0; i < MAX_BOUNCES; ++i) {
     HitInfo hit = HitInfo(
       false,
-      0.0,
+      float(inf),
       vec3(0.0, 0.0, 0.0),
       vec3(0.0, 0.0, 0.0),
       vec3(0.0, 0.0, 0.0)
     );
 
     for (uint j = 0; j < ssbo.size; ++j) {
-      HitInfo info = rayToSphere(ssbo.transforms[j], ray);
+      HitInfo info = RaySphere(ssbo.transforms[j], ray);
 
-      if (!info.hit) continue;
-
-      if (info.t < hit.t) {
+      if (info.hit && info.t < hit.t) {
         hit = info;
-        continue;
       }
     }
 
     if (!hit.hit) {
-      break;
+      float a = abs(dot(ray.dir, vec3(0.0, -1.0, 0.0)));
+      ray.color += (1 - a) * SKY_LIGHT + a * SKY_DARK;
+      return ray;
     }
 
-    int invert = 1;
-    if (dot(ray.dir, hit.normal) < 0) {
-      invert = -1;
-    }
+    ray.color += abs(dot(ray.dir, hit.normal)) * hit.color;
+    ray.origin = hit.point;
 
-    vec3 dir = invert * normalize(ray.dir - 2 * dot(ray.dir, hit.normal) * hit.normal);
-    vec3 color = hit.color;
+    float alignment = dot(ray.dir, hit.normal);
+    int invert = int(alignment / abs(alignment));
 
-    ray = Ray(
-      hit.point,
-      dir,
-      color
-    );
+    ray.dir = invert * (ray.dir - 2 * alignment * hit.normal);
   }
 
-  fColor = vec4(camera.proj[0].xyz, 1.0);
+  return ray;
 }

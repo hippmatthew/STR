@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20.0)
 project(STR VERSION 1.0)
-option(CMAKE_EXPORT_COMPILE_COMMANDS "Export compile_commands.json for IDEs" ON)
+option(CMAKE_EXPORT_COMPILE_COMMANDS "exporting compile_commands.json" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)

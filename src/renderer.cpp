@@ -1,38 +1,18 @@
 #include "src/include/renderer.hpp"
 
 #include <optional>
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace str
 {
 
 ViewportPlane Renderer::viewportPlane()
 {
-  std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
-
-  unsigned int rows = VECS_SETTINGS.height();
-  unsigned int cols = VECS_SETTINGS.width();
-  float dx = 2.0 / cols;
-  float dy = 2.0 / rows;
-
-  for (unsigned long i = 0; i <= rows; ++i)
-  {
-    for (unsigned long j = 0; j <= cols; ++j)
-    {
-      vertices.emplace_back(Vertex{{ j * dx - 1, i * dy - 1, 0.1 }});
-
-      if (i == rows || j == cols) continue;
-
-      unsigned int topL = i * (cols + 1) + j;
-      unsigned int topR = topL + 1;
-      unsigned int botL = (i + 1) * (cols + 1) + j;
-      unsigned int botR = botL + 1;
-
-      indices.insert(indices.end(), { topL, botL, topR, topR, botL, botR });
-    }
-  }
-
-  return ViewportPlane{ vertices, indices };
+  return ViewportPlane{
+    { {{ -1.0, -1.0, 0.0 }}, {{ 1.0, -1.0, 0.0 }}, {{ -1.0, 1.0, 0.0 }}, {{ 1.0, 1.0, 0.0 }} },
+    { 0, 2, 1, 1, 2, 3 }
+  };
 }
 
 void Renderer::update(
@@ -159,7 +139,7 @@ void Renderer::begin(unsigned int imageIndex)
     memoryBarrier
   );
 
-  vk::RenderingAttachmentInfo i_attachment{
+  vk::RenderingAttachmentInfo i_color{
     .imageView    = *vecs_gui->imageView(imageIndex),
     .imageLayout  = vk::ImageLayout::eColorAttachmentOptimal,
     .loadOp       = vk::AttachmentLoadOp::eClear,
@@ -167,12 +147,23 @@ void Renderer::begin(unsigned int imageIndex)
     .clearValue   = VECS_SETTINGS.background_color()
   };
 
+  vk::RenderingAttachmentInfo i_depth{
+    .imageView    = *vecs_gui->depthView(),
+    .imageLayout  = vk::ImageLayout::eDepthAttachmentOptimal,
+    .loadOp       = vk::AttachmentLoadOp::eClear,
+    .storeOp      = vk::AttachmentStoreOp::eDontCare,
+    .clearValue   = vk::ClearValue{ .depthStencil = vk::ClearDepthStencilValue{1.0, 0} }
+  };
+
+  std::array<vk::RenderingAttachmentInfo, 2> attachments = { i_color, i_depth };
+
   vk::RenderingInfo i_rendering{
     .renderArea           = { .offset = { 0, 0 },
                               .extent = VECS_SETTINGS.extent() },
     .layerCount           = 1,
     .colorAttachmentCount = 1,
-    .pColorAttachments    = &i_attachment
+    .pColorAttachments    = &i_color,
+    .pDepthAttachment     = &i_depth
   };
 
   vk_commandBuffers[frame].beginRenderingKHR(i_rendering);
@@ -222,9 +213,16 @@ void Renderer::render(
 
   vk_commandBuffers[frame].pushConstants<la::mat<4>>(
     *material->pipelineLayout(),
-    vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+    vk::ShaderStageFlagBits::eVertex,
     0,
-    { camera.view(), camera.projection() }
+    camera.view()
+  );
+
+  vk_commandBuffers[frame].pushConstants<la::vec<3>>(
+    *material->pipelineLayout(),
+    vk::ShaderStageFlagBits::eVertex,
+    sizeof(la::mat<4>),
+    camera.params()
   );
 
   vk_commandBuffers[frame].bindVertexBuffers(0, *graphics->vertexBuffer(), { 0 });

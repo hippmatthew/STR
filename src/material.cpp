@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vulkan/vulkan.hpp>
 
 namespace str
 {
@@ -87,9 +88,9 @@ std::vector<char> Material::read(const std::string& path) const
   return buffer;
 }
 
-void Material::load(const vecs::Device& vecs_device)
+void Material::load(const vecs::Device& vecs_device, const vecs::GUI& vecs_gui)
 {
-  loadPipeline(vecs_device);
+  loadPipeline(vecs_device, vecs_gui);
   allocateUniforms(vecs_device);
   loadDescriptors(vecs_device);
 }
@@ -101,7 +102,7 @@ void Material::updateTransforms(unsigned long frame, const std::vector<Transform
     transforms[i] = ts[i];
 
   TransformBuffer buffer{
-    .count      = transforms.size(),
+    .count      = static_cast<unsigned int>(ts.size()),
     .transforms = transforms
   };
 
@@ -169,7 +170,7 @@ unsigned int Material::findIndex(
   throw std::runtime_error("error @ str::Graphics::findIndex() : could not find suitable memory index");
 }
 
-void Material::loadPipeline(const vecs::Device& vecs_device)
+void Material::loadPipeline(const vecs::Device& vecs_device, const vecs::GUI& vecs_gui)
 {
   auto modules = shaderModules(vecs_device);
   auto stages = createInfos(modules);
@@ -207,7 +208,7 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
     .depthClampEnable         = vk::False,
     .rasterizerDiscardEnable  = vk::False,
     .polygonMode              = vk::PolygonMode::eFill,
-    .cullMode                 = vk::CullModeFlagBits::eBack,
+    .cullMode                 = vk::CullModeFlagBits::eNone,
     .frontFace                = vk::FrontFace::eCounterClockwise,
     .depthBiasEnable          = vk::False,
     .depthBiasConstantFactor  = 0.0f,
@@ -223,6 +224,12 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
     .pSampleMask            = nullptr,
     .alphaToCoverageEnable  = vk::False,
     .alphaToOneEnable       = vk::False
+  };
+
+  vk::PipelineDepthStencilStateCreateInfo ci_stencil{
+    .depthTestEnable  = vk::True,
+    .depthWriteEnable = vk::True,
+    .depthCompareOp   = vk::CompareOp::eLess,
   };
 
   vk::PipelineColorBlendAttachmentState blendState{
@@ -250,7 +257,7 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
     .binding          = 0,
     .descriptorType   = vk::DescriptorType::eStorageBuffer,
     .descriptorCount  = 1,
-    .stageFlags       = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
+    .stageFlags       = vk::ShaderStageFlagBits::eFragment
   };
 
   vk::DescriptorSetLayoutCreateInfo ci_descriptorLayout{
@@ -260,25 +267,27 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
 
   vk_descriptorLayout = vecs_device.logical().createDescriptorSetLayout(ci_descriptorLayout);
 
-  vk::PushConstantRange matrices{
-    .stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+  vk::PushConstantRange camera{
+    .stageFlags = vk::ShaderStageFlagBits::eVertex,
     .offset     = 0,
-    .size       = 2 * sizeof(la::mat<4>)
+    .size       = sizeof(la::mat<4>) + sizeof(la::vec<3>)
   };
 
   vk::PipelineLayoutCreateInfo ci_pipelineLayout{
     .setLayoutCount         = 1,
     .pSetLayouts            = &*vk_descriptorLayout,
     .pushConstantRangeCount = 1,
-    .pPushConstantRanges    = &matrices
+    .pPushConstantRanges    = &camera
   };
 
   vk_pipelineLayout = vecs_device.logical().createPipelineLayout(ci_pipelineLayout);
 
   auto format = VECS_SETTINGS.format();
+  auto dformat = VECS_SETTINGS.depth_format();
   vk::PipelineRenderingCreateInfoKHR ci_rendering{
-    .colorAttachmentCount = 1,
-    .pColorAttachmentFormats  = &format
+    .colorAttachmentCount     = 1,
+    .pColorAttachmentFormats  = &format,
+    .depthAttachmentFormat    = dformat
   };
 
   vk::GraphicsPipelineCreateInfo ci_pipeline{
@@ -290,7 +299,7 @@ void Material::loadPipeline(const vecs::Device& vecs_device)
     .pViewportState       = &ci_viewportState,
     .pRasterizationState  = &ci_rasterizer,
     .pMultisampleState    = &ci_multisampling,
-    .pDepthStencilState   = nullptr,
+    .pDepthStencilState   = &ci_stencil,
     .pColorBlendState     = &ci_blendState,
     .pDynamicState        = &ci_dynamicState,
     .layout               = *vk_pipelineLayout,

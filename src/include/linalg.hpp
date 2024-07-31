@@ -318,10 +318,10 @@ mat<M, N, T> mat<M, N, T>::view_matrix(vec<3, T> ws_r, vec<3, T> ws_t, vec<3, T>
   vec<3, T> cs_y = cs_x % cs_z;
 
   return mat<4, 4, T>{
-    vec<4, T>(cs_x, { -ws_r * cs_x }),
-    vec<4, T>(cs_y, { -ws_r * cs_y }),
-    vec<4, T>(cs_z, { -ws_r * cs_z }),
-    { 0.0, 0.0, 0.0, 1.0 }
+    { cs_x[0], cs_y[0], cs_z[0], 0.0 },
+    { cs_x[1], cs_y[1], cs_z[1], 0.0 },
+    { cs_x[2], cs_y[2], cs_z[2], 0.0 },
+    { -ws_r * cs_x, -ws_r * cs_y, -ws_r * cs_z, 1.0 }
   };
 }
 
@@ -335,9 +335,9 @@ mat<M, N, T> mat<M, N, T>::perspective_projection(T fov_y, T aspect_ratio, T nea
 
   return mat<4, 4, T>{
     vec<4, T>{ 1 / (aspect_ratio * tan_fov), 0.0, 0.0, 0.0 },
-    vec<4, T>{ 0.0, 1 / tan_fov, 0.0, 0.0 },
-    vec<4, T>{ 0.0, 0.0, (far - near) / delta_plane, 1.0 },
-    vec<4, T>{ 0.0, 0.0,  -2 * far * near / delta_plane, 0.0 }
+    vec<4, T>{ 0.0, -1 / tan_fov, 0.0, 0.0 },
+    vec<4, T>{ 0.0, 0.0, (far + near) / delta_plane, 2 * far * near / delta_plane },
+    vec<4, T>{ 0.0, 0.0,  -1.0, 0.0 }
   };
 }
 

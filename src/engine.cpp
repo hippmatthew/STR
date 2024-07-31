@@ -4,6 +4,7 @@
 #include "src/include/transform.hpp"
 
 #include <chrono>
+#include <iostream>
 
 namespace str
 {
@@ -35,7 +36,7 @@ void Engine::run()
     poll_gui();
     renderer->waitFlight();
 
-    auto start_frame = std::chrono::high_resolution_clock::now();
+    auto start_frame = std::chrono::steady_clock::now();
 
     std::vector<Transform> transforms;
     for (auto e_id : entity_manager->retrieve<Transform>())
@@ -45,15 +46,29 @@ void Engine::run()
       ->updateTransforms(renderer->currentFrame(), transforms);
 
     renderer->update(component_manager, { 0 });
+    // renderer->camera.rotate({ 0.0f, la::radians(30.0f) * delta_time, 0.0f });
 
-    auto end_frame = std::chrono::high_resolution_clock::now();
+    auto end_frame = std::chrono::steady_clock::now();
 
-    prevTime = time;
-    time += std::chrono::duration<float, std::chrono::seconds::period>(end_frame - start_frame).count();
-    delta_time = time - prevTime;
+    delta_time = std::chrono::duration<float>(end_frame - start_frame).count();
+
+    timings[index] = delta_time;
+    index = ++index % SAMPLE_SIZE;
   }
 
   vecs_device->logical().waitIdle();
+
+  float frame_time = average();
+  std::cout << "average frame time: " << frame_time * 1000 << "ms (" << 1 / frame_time << " fps)\n";
+}
+
+float Engine::average() const
+{
+  float sum = 0;
+  for (auto dt : timings)
+    sum += dt;
+
+  return sum / SAMPLE_SIZE;
 }
 
 void Engine::setupECS()
@@ -84,25 +99,26 @@ void Engine::setupECS()
   entity_manager->new_entity();
   entity_manager->add_components<Transform>(1);
   component_manager->update_data(1,
-    Transform(Shape::Sphere, 0.5)
-      .translate(3.0, { 0.0, 0.0, 1.0 })
-      .scale({ 0.5, 0.0, 0.0 })
+    Transform(Shape::Sphere, 0.5, { 0.1, 0.1, 0.1 })
+      .translate(10.0, { 0.0, 0.0, 1.0 })
+      .scale({ 0.6, 0.0, 0.0 })
   );
 
   entity_manager->new_entity();
   entity_manager->add_components<Transform>(2);
   component_manager->update_data(2,
     Transform(Shape::Sphere, 0.5, { 0.0, 0.0, 1.0 })
-      .translate(6.0, { 0.1, 0.0, 1.0 })
+      .translate(3.0, la::vec<3>{ 1.0, 0.0, 1.0 }.normalized())
+      .scale({ 0.3, 0.0, 0.0 })
   );
 
-  entity_manager->new_entity();
-  entity_manager->add_components<Transform>(3);
-  component_manager->update_data(3,
-    Transform(Shape::Sphere, 0.5, { 1.0, 0.0, 0.0 })
-      .translate(5.0, { 1.0, 0.1, 1.0 })
-      .scale({ 0.75, 0.0, 0.0 })
-  );
+  // entity_manager->new_entity();
+  // entity_manager->add_components<Transform>(3);
+  // component_manager->update_data(3,
+  //   Transform(Shape::Sphere, 0.5, { 1.0, 0.0, 0.0 })
+  //     .translate(50.0, { 0.0, 0.0, 1.0 })
+  //     .scale({ 10, 0.0, 0.0 })
+  // );
 }
 
 void Engine::loadComponents()
@@ -110,7 +126,7 @@ void Engine::loadComponents()
   renderer->link(vecs_device, vecs_gui);
   renderer->initialize();
 
-  component_manager->retrieve<P_MATERIAL>(0).value()->load(*vecs_device);
+  component_manager->retrieve<P_MATERIAL>(0).value()->load(*vecs_device, *vecs_gui);
   component_manager->retrieve<P_GRAPHICS>(0).value()->initialize(*vecs_device);
 }
 

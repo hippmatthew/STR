@@ -59,7 +59,7 @@ class Material
     const vk::raii::DescriptorSetLayout& descriptorLayout() const;
     const vk::raii::DescriptorSet& descriptorSet(unsigned long) const;
 
-    void load(const vecs::Device&);
+    void load(const vecs::Device&, const vecs::GUI&);
     void updateTransforms(unsigned long, const std::vector<Transform>&);
 
   private:
@@ -76,7 +76,7 @@ class Material
       vk::MemoryPropertyFlags
     ) const;
 
-    void loadPipeline(const vecs::Device&);
+    void loadPipeline(const vecs::Device&, const vecs::GUI&);
     void allocateUniforms(const vecs::Device&);
     void loadDescriptors(const vecs::Device&);
 

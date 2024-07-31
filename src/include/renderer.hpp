@@ -22,8 +22,12 @@ struct ViewportPlane
   std::vector<unsigned int> indices;
 };
 
+class Engine;
+
 class Renderer : public vecs::System
 {
+  friend class Engine;
+
   public:
     Renderer() = default;
     Renderer(const Renderer&) = delete;

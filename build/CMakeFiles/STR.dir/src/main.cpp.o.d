@@ -1218,5 +1218,4 @@ CMakeFiles/STR.dir/src/main.cpp.o: \
   /usr/local/include/vecs/./templates.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/material.hpp \
   /Users/groot/Documents/GitHub/STR/./src/include/transform.hpp \
-  /Users/groot/Documents/GitHub/STR/./src/include/camera.hpp \
-  /opt/homebrew/opt/llvm/bin/../include/c++/v1/iostream
+  /Users/groot/Documents/GitHub/STR/./src/include/camera.hpp
