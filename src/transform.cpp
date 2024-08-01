@@ -3,15 +3,9 @@
 namespace str
 {
 
-Transform::Transform(Shape sh, float sm, la::vec<3> col)
+Transform::Transform(la::vec<3> c)
 {
-  shape = sh;
-
-  if (sm < 0) sm = 0;
-  else if (sm > 1) sm = 1;
-
-  smoothess = sm;
-  color = col;
+  color = c;
 }
 
 const la::mat<4> Transform::model() const

@@ -1,8 +1,6 @@
 #ifndef str_renderer_hpp
 #define str_renderer_hpp
 
-#include "src/include/graphics.hpp"
-#include "src/include/material.hpp"
 #include "src/include/camera.hpp"
 
 #include <vecs/vecs.hpp>
@@ -10,24 +8,13 @@
 #include <string>
 #include <vector>
 
-#define P_GRAPHICS std::shared_ptr<str::Graphics>
-#define P_MATERIAL std::shared_ptr<str::Material>
+#define p_camera std::shared_ptr<str::Camera>
 
 namespace str
 {
 
-struct ViewportPlane
-{
-  std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
-};
-
-class Engine;
-
 class Renderer : public vecs::System
 {
-  friend class Engine;
-
   public:
     Renderer() = default;
     Renderer(const Renderer&) = delete;
@@ -38,8 +25,6 @@ class Renderer : public vecs::System
     Renderer& operator = (const Renderer&) = delete;
     Renderer& operator = (Renderer&&) = delete;
 
-    static ViewportPlane viewportPlane();
-
     void update(const std::shared_ptr<vecs::ComponentManager>&, std::set<unsigned long>) override;
 
     void waitFlight() const;
@@ -47,17 +32,18 @@ class Renderer : public vecs::System
 
     void link(std::shared_ptr<vecs::Device>, std::shared_ptr<vecs::GUI>);
     void initialize();
+    void setCamera(unsigned long);
 
   private:
     void checkResult(const vk::Result&, std::string) const;
 
     void begin(unsigned int);
-    void render(const std::shared_ptr<vecs::ComponentManager>&, unsigned long, unsigned int);
+    void render(std::shared_ptr<vecs::ComponentManager>, unsigned int);
     void end(unsigned int);
 
   private:
     unsigned int frame = 0;
-    Camera camera;
+    unsigned long camera_id;
 
     std::vector<vk::raii::Fence> flightFences;
     std::vector<vk::raii::Semaphore> imageSemaphores;

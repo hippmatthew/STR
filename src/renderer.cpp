@@ -1,19 +1,12 @@
 #include "src/include/renderer.hpp"
+#include "src/include/camera.hpp"
+#include "src/include/transform.hpp"
 
+#include <memory>
 #include <optional>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
 
 namespace str
 {
-
-ViewportPlane Renderer::viewportPlane()
-{
-  return ViewportPlane{
-    { {{ -1.0, -1.0, 0.0 }}, {{ 1.0, -1.0, 0.0 }}, {{ -1.0, 1.0, 0.0 }}, {{ 1.0, 1.0, 0.0 }} },
-    { 0, 2, 1, 1, 2, 3 }
-  };
-}
 
 void Renderer::update(
   const std::shared_ptr<vecs::ComponentManager>& component_manager,
@@ -25,10 +18,30 @@ void Renderer::update(
 
   vecs_device->logical().resetFences(*flightFences[frame]);
 
+  if (e_ids.empty()) return;
+
+  auto camera_opt = component_manager->retrieve<p_camera>(camera_id);
+  if (camera_opt == std::nullopt) return;
+  auto camera = camera_opt.value();
+
+
+  std::vector<Transform> transforms;
+  unsigned long index = 0;
+  for (const auto& e_id : e_ids)
+  {
+    auto transform = component_manager->retrieve<Transform>(e_id);
+    if (transform == std::nullopt) continue;
+
+    transforms.emplace_back(transform.value());
+    if (++index == STR_MAX_TRANSFORMS) break;
+  }
+
+  camera->updateSSBO(frame, transforms);
+
   begin(result.second);
 
   for (const auto& e_id : e_ids)
-    render(component_manager, e_id, result.second);
+    render(component_manager, result.second);
 
   end(result.second);
 
@@ -101,6 +114,11 @@ void Renderer::initialize()
     imageSemaphores.emplace_back(vecs_device->logical().createSemaphore(ci_semaphore));
     renderSemaphores.emplace_back(vecs_device->logical().createSemaphore(ci_semaphore));
   }
+}
+
+void Renderer::setCamera(unsigned long e_id)
+{
+  camera_id = e_id;
 }
 
 void Renderer::checkResult(const vk::Result& result, std::string errorType) const
@@ -185,50 +203,41 @@ void Renderer::begin(unsigned int imageIndex)
   vk_commandBuffers[frame].setScissor(0, vk_scissor);
 }
 
-void Renderer::render(
-  const std::shared_ptr<vecs::ComponentManager>& component_manager,
-  unsigned long e_id,
-  unsigned int imageIndex)
+void Renderer::render(std::shared_ptr<vecs::ComponentManager> component_manager, unsigned int imageIndex)
 {
-  auto graphics_opt = component_manager->retrieve<P_GRAPHICS>(e_id);
-  if (graphics_opt == std::nullopt) return;
-  auto graphics = graphics_opt.value();
-
-  auto material_opt = component_manager->retrieve<P_MATERIAL>(e_id);
-  if (material_opt == std::nullopt) return;
-  auto material = material_opt.value();
+  auto camera = component_manager->retrieve<p_camera>(camera_id).value();
 
   vk_commandBuffers[frame].bindPipeline(
     vk::PipelineBindPoint::eGraphics,
-    *material->pipeline()
+    *camera->pipeline()
   );
 
   vk_commandBuffers[frame].bindDescriptorSets(
     vk::PipelineBindPoint::eGraphics,
-    *material->pipelineLayout(),
+    *camera->pipelineLayout(),
     0,
-    *material->descriptorSet(frame),
+    *camera->descriptorSet(frame),
     nullptr
   );
 
   vk_commandBuffers[frame].pushConstants<la::mat<4>>(
-    *material->pipelineLayout(),
+    *camera->pipelineLayout(),
     vk::ShaderStageFlagBits::eVertex,
     0,
-    camera.view()
+    camera->view_matrix()
   );
 
   vk_commandBuffers[frame].pushConstants<la::vec<3>>(
-    *material->pipelineLayout(),
+    *camera->pipelineLayout(),
     vk::ShaderStageFlagBits::eVertex,
     sizeof(la::mat<4>),
-    camera.params()
+    camera->near_plane_dimensions()
   );
 
-  vk_commandBuffers[frame].bindVertexBuffers(0, *graphics->vertexBuffer(), { 0 });
-  vk_commandBuffers[frame].bindIndexBuffer(*graphics->indexBuffer(), 0, vk::IndexType::eUint32);
+  vk_commandBuffers[frame].bindVertexBuffers(0, *camera->vertexBuffer(), { 0 });
+  vk_commandBuffers[frame].bindIndexBuffer(*camera->indexBuffer(), 0, vk::IndexType::eUint32);
 
-  vk_commandBuffers[frame].drawIndexed(graphics->indexCount(), 1, 0, 0, 0);
+  vk_commandBuffers[frame].drawIndexed(6, 1, 0, 0, 0);
 }
 
 void Renderer::end(unsigned int imageIndex)

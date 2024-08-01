@@ -1,5 +1,4 @@
 #include "src/include/engine.hpp"
-#include "src/include/linalg.hpp"
 #include "src/include/renderer.hpp"
 #include "src/include/transform.hpp"
 
@@ -8,14 +7,6 @@
 
 namespace str
 {
-
-Engine::~Engine()
-{
-  renderer.reset();
-
-  component_manager->unregister_components<P_GRAPHICS, Material>();
-  system_manager->erase<Renderer>();
-}
 
 void Engine::load()
 {
@@ -31,6 +22,7 @@ void Engine::load()
 
 void Engine::run()
 {
+
   while (!close_condition())
   {
     poll_gui();
@@ -38,19 +30,16 @@ void Engine::run()
 
     auto start_frame = std::chrono::steady_clock::now();
 
-    std::vector<Transform> transforms;
-    for (auto e_id : entity_manager->retrieve<Transform>())
-      transforms.emplace_back(component_manager->retrieve<Transform>(e_id).value());
+    renderer->update(component_manager, entity_manager->retrieve<Transform>());
 
-    component_manager->retrieve<P_MATERIAL>(0).value()
-      ->updateTransforms(renderer->currentFrame(), transforms);
-
-    renderer->update(component_manager, { 0 });
-    // renderer->camera.rotate({ 0.0f, la::radians(30.0f) * delta_time, 0.0f });
+    auto transform = component_manager->retrieve<Transform>(1).value();
+    transform.translate(0.25 * sinf(2 * la::radians(50.0f) * elapsed_time - 0.5), { 1.0, 0.0, 0.0 });
+    component_manager->update_data(1, transform);
 
     auto end_frame = std::chrono::steady_clock::now();
 
     delta_time = std::chrono::duration<float>(end_frame - start_frame).count();
+    elapsed_time += delta_time;
 
     timings[index] = delta_time;
     index = ++index % SAMPLE_SIZE;
@@ -73,61 +62,32 @@ float Engine::average() const
 
 void Engine::setupECS()
 {
-  component_manager->register_components<P_GRAPHICS, P_MATERIAL, Transform>();
+  component_manager->register_components<p_camera, Transform>();
 
   system_manager->emplace<Renderer>();
-  system_manager->add_components<Renderer, P_GRAPHICS, P_MATERIAL>();
+  system_manager->add_components<Renderer, p_camera, Transform>();
   renderer = system_manager->system<Renderer>().value();
 
-  auto viewportPlane = Renderer::viewportPlane();
-
   entity_manager->new_entity();
-  entity_manager->add_components<P_GRAPHICS, Material>(0);
-  component_manager->update_data(0,
-    std::make_shared<Graphics>(
-      Graphics::Builder()
-        .vertices(viewportPlane.vertices)
-        .indices(viewportPlane.indices)
-    ),
-    std::make_shared<Material>(
-      Material::Builder()
-        .shader(vk::ShaderStageFlagBits::eVertex, "spv/viewport.vert.spv")
-        .shader(vk::ShaderStageFlagBits::eFragment, "spv/viewport.frag.spv")
-    )
-  );
+  entity_manager->add_components<p_camera>(0);
+  component_manager->update_data(0, std::make_shared<Camera>());
 
   entity_manager->new_entity();
   entity_manager->add_components<Transform>(1);
   component_manager->update_data(1,
-    Transform(Shape::Sphere, 0.5, { 0.1, 0.1, 0.1 })
+    Transform({ 0.0, 1.0, 0.0 })
       .translate(10.0, { 0.0, 0.0, 1.0 })
       .scale({ 0.6, 0.0, 0.0 })
   );
-
-  entity_manager->new_entity();
-  entity_manager->add_components<Transform>(2);
-  component_manager->update_data(2,
-    Transform(Shape::Sphere, 0.5, { 0.0, 0.0, 1.0 })
-      .translate(3.0, la::vec<3>{ 1.0, 0.0, 1.0 }.normalized())
-      .scale({ 0.3, 0.0, 0.0 })
-  );
-
-  // entity_manager->new_entity();
-  // entity_manager->add_components<Transform>(3);
-  // component_manager->update_data(3,
-  //   Transform(Shape::Sphere, 0.5, { 1.0, 0.0, 0.0 })
-  //     .translate(50.0, { 0.0, 0.0, 1.0 })
-  //     .scale({ 10, 0.0, 0.0 })
-  // );
 }
 
 void Engine::loadComponents()
 {
+  component_manager->retrieve<p_camera>(0).value()->load(*vecs_device, *vecs_gui);
+
   renderer->link(vecs_device, vecs_gui);
   renderer->initialize();
-
-  component_manager->retrieve<P_MATERIAL>(0).value()->load(*vecs_device, *vecs_gui);
-  component_manager->retrieve<P_GRAPHICS>(0).value()->initialize(*vecs_device);
+  renderer->setCamera(0);
 }
 
 } // namespace str

@@ -1,12 +1,10 @@
 #version 460
 
 struct Transform {
-  uint shape;
-  float smoothness;
-  vec3 color;
-  vec3 size;
   vec3 position;
   vec3 rotation;
+  vec3 scale;
+  vec3 color;
 };
 
 struct Ray {
@@ -36,7 +34,7 @@ layout(location = 0) out vec4 fColor;
 const float inf = float(1.0 / 0.0);
 const vec3 SKY_LIGHT = vec3(0.5294, 0.8078, 0.9216);
 const vec3 SKY_DARK = vec3(0.0980, 0.0980, 0.4392);
-const uint MAX_BOUNCES = 10;
+const uint MAX_BOUNCES = 1;
 
 HitInfo RaySphere(Ray, Transform);
 Ray trace(Ray);
@@ -55,7 +53,7 @@ void main() {
 
 HitInfo RaySphere(Transform transform, Ray ray) {
   vec3 O = ray.origin - transform.position;
-  float R = transform.size[0];
+  float R = transform.scale[0];
 
   float b = 2 * dot(O, ray.dir);
   float c = dot(O, O) - R * R;

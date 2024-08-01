@@ -1,7 +1,10 @@
 # Directories
-.vscode
-.cache
+/.vscode/
+/.cache/
+/build/
+/spv/
 
 # Files
 compile_commands.json
 Makefile
+STR

@@ -6,16 +6,15 @@
 namespace str
 {
 
-enum Shape
+struct Material
 {
-  Sphere = 0u,
-  Cube
+  la::vec<3> color;
 };
 
 class Transform
 {
   public:
-    Transform(Shape sh = Shape::Sphere, float sm = 0.5f, la::vec<3> col = { 0.0, 1.0, 0.0 });
+    Transform(la::vec<3> c = { 0.0, 1.0, 0.0 });
     Transform(const Transform&) = default;
     Transform(Transform&&) = default;
 
@@ -30,13 +29,13 @@ class Transform
     Transform& translate(float, la::vec<3>);
     Transform& rotate(la::vec<3>);
 
+    const la::vec<3>& pos() const { return position; }
+
   private:
-    alignas(4) unsigned int shape = Shape::Sphere;
-    alignas(4) float smoothess = 0.5;
-    alignas(16) la::vec<3> color = { 0.0, 1.0, 0.0 };
-    alignas(16) la::vec<3> size = { 1.0, 1.0, 1.0 };
     alignas(16) la::vec<3> position = { 0.0, 0.0, 0.0 };
     alignas(16) la::vec<3> rotation = { 0.0, 0.0, 0.0 };
+    alignas(16) la::vec<3> size = { 1.0, 1.0, 1.0 };
+    alignas(16) la::vec<3> color = { 0.0, 1.0, 0.0 };
 };
 
 } // namespace str

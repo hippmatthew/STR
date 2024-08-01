@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20.0)
-project(STR VERSION 1.0)
-option(CMAKE_EXPORT_COMPILE_COMMANDS "exporting compile_commands.json" ON)
+project(str VERSION 1.0)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -23,42 +23,37 @@ set(SOURCES
     ${CMAKE_SOURCE_DIR}/src/include/linalg.hpp
     ${CMAKE_SOURCE_DIR}/src/camera.cpp
     ${CMAKE_SOURCE_DIR}/src/engine.cpp
-    ${CMAKE_SOURCE_DIR}/src/graphics.cpp
-    ${CMAKE_SOURCE_DIR}/src/intersections.cpp
     ${CMAKE_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_SOURCE_DIR}/src/material.cpp
     ${CMAKE_SOURCE_DIR}/src/renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/transform.cpp
-    ${CMAKE_SOURCE_DIR}/src/vertex.cpp
 )
 
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
 
-add_executable(STR ${SOURCES})
+add_executable(str ${SOURCES})
 
-target_link_libraries(STR
+target_link_libraries(str
     Vulkan::Vulkan
     glfw
     libvecs.a
 )
 
-set_target_properties(STR PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}
+set(SHADERS
+  ${CMAKE_SOURCE_DIR}/shaders/camera.vert
+  ${CMAKE_SOURCE_DIR}/shaders/camera.frag
 )
 
-set(SHADERS
-  ${CMAKE_SOURCE_DIR}/shaders/viewport.vert
-  ${CMAKE_SOURCE_DIR}/shaders/viewport.frag
-)
+set(SHADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders)
 
 foreach(SHADER ${SHADERS})
   get_filename_component(FILE_NAME ${SHADER} NAME)
   get_filename_component(FILE_EXT ${SHADER} EXT)
-  set(SPV ${CMAKE_SOURCE_DIR}/spv/${FILE_NAME}.spv)
+  set(SPV ${SHADER_OUTPUT_DIR}/${FILE_NAME}.spv)
 
   add_custom_command(
     OUTPUT ${SPV}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_OUTPUT_DIR}
     COMMAND ${GLSLC} -o ${SPV} ${SHADER}
     DEPENDS ${SHADER}
     COMMENT "Compiling ${SHADER}"
@@ -68,4 +63,4 @@ foreach(SHADER ${SHADERS})
 endforeach()
 
 add_custom_target(shaders ALL DEPENDS ${SPVS})
-add_dependencies(STR shaders)
+add_dependencies(str shaders)

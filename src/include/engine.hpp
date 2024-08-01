@@ -13,7 +13,9 @@ namespace str
 class Engine : public vecs::Engine
 {
   public:
-    ~Engine();
+    Engine() = default;
+
+    ~Engine() = default;
 
     void load() override;
     void run() override;
@@ -27,6 +29,7 @@ class Engine : public vecs::Engine
 
   private:
     float delta_time = 0.0f;
+    float elapsed_time = 0.0f;
     std::array<float, SAMPLE_SIZE> timings;
     unsigned long index = 0;
 
